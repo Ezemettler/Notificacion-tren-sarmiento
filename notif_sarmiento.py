@@ -28,12 +28,15 @@ def enviar_telegram(mensaje):
     else:
         print("❌ Error enviando a Telegram:", r.text)
 
+
 # Configurar navegador
 options = webdriver.ChromeOptions()
 options.add_argument('--start-maximized')
-# options.add_argument('--headless')  # Descomentá si no querés ver el navegador
-
+options.add_argument('--headless')  # Ejecutar sin ventana gráfica
+options.add_argument('--no-sandbox')  # Para GitHub Actions
+options.add_argument('--disable-dev-shm-usage')  # Para contenedores Linux
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
 
 try:
     # Login a Twitter
