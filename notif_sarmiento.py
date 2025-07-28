@@ -1,55 +1,70 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from webdriver_manager.chrome import ChromeDriverManager
+from dotenv import load_dotenv
+import os
+import time
 import requests
-from bs4 import BeautifulSoup
 
-# Lista de instancias de Nitter
-NITTER_INSTANCIAS = [
-    "https://nitter.poast.org",
-    "https://nitter.privacyredirect.com",
-    "https://lightbrd.com",
-    "https://nitter.space",
-    "https://nitter.tiekoetter.com",
-    "https://nitter.kareem.one",
-    "https://nuku.trabun.org",
-    "https://xcancel.com"
-]
+# Cargar .env
+load_dotenv()
+TW_USER = os.getenv("TWITTER_USER")
+TW_PASS = os.getenv("TWITTER_PASS")
+TG_TOKEN = os.getenv("TELEGRAM_TOKEN")
+TG_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
+# Enviar mensaje por Telegram
+def enviar_telegram(mensaje):
+    url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TG_CHAT_ID,
+        "text": mensaje
+    }
+    r = requests.post(url, json=payload)
+    if r.status_code == 200:
+        print("✅ Enviado a Telegram")
+    else:
+        print("❌ Error enviando a Telegram:", r.text)
 
-CUENTA = "/InfoTSarmiento"
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-}
+# Configurar navegador
+options = webdriver.ChromeOptions()
+options.add_argument('--start-maximized')
+# options.add_argument('--headless')  # Descomentá si no querés ver el navegador
 
-def obtener_tweet_valido():
-    for base_url in NITTER_INSTANCIAS:
-        url = base_url + CUENTA
-        try:
-            response = requests.get(url, headers=HEADERS, timeout=10)
-            if response.status_code == 200:
-                print(f"✅ Usando instancia: {base_url}")
-                return response.text, base_url
-            else:
-                print(f"⚠️ {base_url} respondió con status {response.status_code}")
-        except Exception as e:
-            print(f"❌ Error accediendo a {base_url}: {e}")
-    raise Exception("🚫 No se pudo acceder a ninguna instancia de Nitter.")
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-# Uso
-html, instancia_utilizada = obtener_tweet_valido()
-soup = BeautifulSoup(html, "lxml")
+try:
+    # Login a Twitter
+    driver.get("https://twitter.com/login")
+    time.sleep(5)
 
-# A partir de acá, parseás como antes
-tweet_div = soup.find("div", class_="timeline-item")
-print(html[:1000])  # Imprime primeros 1000 caracteres del HTML
-if tweet_div is None:
-    print("❌ No se encontró ningún tweet en la página.")
-    exit(1)
+    driver.find_element(By.NAME, "text").send_keys(TW_USER + Keys.RETURN)
+    time.sleep(3)
 
-tweet_text = tweet_div.find("div", class_="tweet-content").text.strip()
-tweet_link = tweet_div.find("a", class_="tweet-link")["href"]
-tweet_url = instancia_utilizada + tweet_link
-tweet_id = tweet_link
+    # A veces pide dos veces el user
+    try:
+        driver.find_element(By.NAME, "text").send_keys(TW_USER + Keys.RETURN)
+        time.sleep(3)
+    except:
+        pass
 
-# Mostrar resultados
-print("📝 Último tweet:", tweet_text)
-print("🔗 Link:", tweet_url)
-print("🆔 ID:", tweet_id)
+    driver.find_element(By.NAME, "password").send_keys(TW_PASS + Keys.RETURN)
+    time.sleep(5)
+
+    # Ir al perfil de @InfoTSarmiento
+    driver.get("https://twitter.com/InfoTSarmiento")
+    time.sleep(5)
+
+    # Extraer el primer tweet
+    tweet = driver.find_element(By.XPATH, '(//article)[1]')
+    contenido = tweet.text.strip()
+    print("🆕 Último tweet:")
+    print(contenido)
+
+    # Enviar por Telegram
+    enviar_telegram(contenido)
+
+finally:
+    driver.quit()
