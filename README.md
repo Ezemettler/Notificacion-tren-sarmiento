@@ -4,12 +4,10 @@
 
 Este proyecto automatiza la consulta de los últimos tweets de la cuenta oficial de Twitter del Tren Sarmiento (@InfoTSarmiento) y envía notificaciones a un bot de Telegram. Así, recibo en tiempo real actualizaciones sobre el estado del servicio sin necesidad de ingresar manualmente a Twitter.
 
-El script utiliza Selenium para abrir un navegador Chrome en modo headless, hacer login en Twitter con credenciales seguras y extraer el último tweet publicado. Luego, envía el contenido directamente a Telegram.
-
 
 ## ¿Por qué hice este proyecto? ¿Qué problema resuelve?
 
-Uso el Tren Sarmiento diariamente y para evitar tener que acordarme y entrar a chequear el estado del tren en la cuenta, me cansaba de tener que entrar a Twitter para revisar si había novedades o problemas en el servicio. Especialmente antes de ir y al salir del trabajo, necesitaba saber si el tren circulaba con normalidad o si había interrupciones para planificar mejor mis viajes.
+Uso el Tren Sarmiento diariamente y necesitaba saber si el tren circulaba con normalidad o si había interrupciones para planificar mejor mis viajes.
 
 Con este proyecto, recibo automáticamente los avisos más recientes en Telegram en horarios clave (mañana y tarde, días hábiles), sin tener que revisar Twitter manualmente. Esto me ahorra tiempo y estrés, ayudándome a evitar llegar a la estación sin información y a buscar alternativas si es necesario.
 
